@@ -95,7 +95,6 @@ Currently for Tails 4.19rc1, do this:
 
 ```
 wget https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/linux-5.10.24.tar.gz
-
 ```
 
 *Note: For now, compiling a pristine kernel source instead of an exactly-matched Debian-specific kernel works best. (For some reason, the latter resulted in a less than ideal, crappy, or even non-working experience inside Tails - things such as no Internet back in Tails 4.18, GNOME settings hanging, and more.) I will investigate because there are many reasons why, for advanced safety reasons, we should default to *exactly* the *Debian-specific* Linux kernel and not the non-Debian once at kernel.org. These instructions will evolve.*

@@ -1,8 +1,8 @@
 # T2Tails
 
-This is a detailed guide (not downloadable ISO) for how to get [Tails](https://tails.boum.org) fully working on T2 Apple devices (e.g. 2019 16-inch MacBook Pro) without needing an external keyboard and mouse.
+This is a detailed guide (with a ready-made ISO) for how to make [Tails](https://tails.boum.org) work on T2 Apple devices (e.g. 2019 16-inch MacBook Pro) without needing an external keyboard and mouse.
 
-**T2Tails:** *Tails Fast Tails Furious*
+**T2Tails:** *Tails Fast, Tails Furious*
 
 ---
 
@@ -10,100 +10,110 @@ This is a detailed guide (not downloadable ISO) for how to get [Tails](https://t
 
 Although Tails is basically regular Debian (specifically, the Live GNOME ISO), its use case is completely different to the other distros with guides and ISOs in the [t2linux wiki](https://wiki.t2linux.org). Tails focuses on anonymity, privacy, and security - not necessarily hardware nirvana - and there are unique safety considerations for people who use Tails for the reasons it's created.
 
-As such, I will not prioritise making a ready-made 'T2Tails' ISO, and this guide doesn't include steps to get *everything* in the T2 hardware working (like the Wifi, which is now [actually possible](https://wiki.t2linux.org/guides/wifi/#on-linux)).
+This guide and ISO doesn't have *everything* in the T2 hardware enabled to work (like the Wifi, which is now [actually possible](https://wiki.t2linux.org/guides/wifi/#on-linux)). Personally I don't care for the Touch Bar or the ambient light sensor. I only am getting the keyboard and trackpad working. However, the procedure is explained clearly enough for you to add the remaining T2 mods to get them all working your T2 machine.
 
-Personally I don't care for the Touch Bar or the ambient light sensor. I only currently provide steps to get the keyboard and trackpad working. However, this procedure is explained clearly enough for you to add the other T2 mods to get them all working your T2 machine. I've done the hard bit already.
+This guide may also help any person trying to modify the kernel of a Debian Live ISO (or to install new drivers to one).
 
-Also, this guide could help people out there trying to modify the kernel of a Debian Live disk (or install new drivers to it). The current instructions are a little hacky but they work, and the procedure is quite efficient too (compared to making an ISO).
+Over time I will aim to make the method both more elegant and safer (see safety notes below), e.g. to adapt the [official Tails building instructions](https://tails.boum.org/contribute/build/) and insert the absolute minimal additional steps to make the stock Tails ISO T2 compatible.
 
-Nonetheless, over time I will aim to make the method both more elegant and safer (see safety notes below), e.g. to adapt the [official Tails building instructions](https://tails.boum.org/contribute/build/) and insert the absolute minimal additional steps to make the stock Tails ISO T2 compatible, where you produce your own T2Tails ISO/IMG.
+However, the current instructions are very useful, so whenever I move to a more elegant method, I will keep older methods in 'Archive' repo folder for reference on the Internet.
 
-However, the current instructions are very useful. (It took a long time to trawl the Internet and put the steps together, along with endless errors to troubleshoot through and finally make it smooth.) So if I move to a more elegant method later, I will keep this current guide in the repo for reference.
-
-I do indicate that I have plenty more to learn myself, but I'll do the best I can to advise best practice for both stability and safety (considering the particular use case of Tails).
+I'll do the best I can to advise best practice for both stability and safety, considering the particular use case of Tails.
 
 ## Safety notes (for Tails users)
 
-**This is not Tails:** The Tails project probably prefers you to just use other hardware instead of modifying the core Tails code. However, they do openly document the [specific process](https://tails.boum.org/contribute/build/) for building Tails yourself, and approvingly deem the customisation of such a process as ["a fork of Tails"](https://tails.boum.org/contribute/customize/). Therefore, this page is an openly documented example of that. This procedure will NOT result in you using 'Tails', but instead a kind of fork of Tails - T2Tails. UNDERSTAND that, and use at your own risk.
+**This is not Tails:** The Tails project would probably prefer you to just use other hardware instead of modifying the core Tails code (or wait for the mainline Kernel to be updated for T2 compatibility). However, they openly document the [specific process](https://tails.boum.org/contribute/build/) for building Tails yourself, and approvingly dub the customisation of such a process as ["a fork of Tails"](https://tails.boum.org/contribute/customize/). Therefore, this page is an openly documented example of that. This procedure will NOT result in you using 'Tails', but instead, a kind of fork of Tails - T2Tails. UNDERSTAND this and use this at your own risk.
 
-**Measure your risks:** I don't think this procedure adds a serious problem for your anonymity when using Tails. For me, it brings a negligible change to my safety due to my own experienced knowledge of the risks. If or where Tails already allows for an Internet-connected program to know what your hardware is (e.g. the "APPLE SSD" hard-coded name of your internal hard disk) - e.g. if it can deeply scan your filesystem to read such things - then you have bigger problems regardless of whether you follow this procedure. All this hack would reveal is that you've slightly modified your system to make Tails work better with the hardware already revealed. Is that bad? You decide. It may depend on your situation.
+**Measure your risks:** I don't think this procedure adds a serious problem for your anonymity when using Tails. For me, it brings a negligible change to my safety, due to my experience and knowledge of the risks. If or where Tails already allows for an Internet-connected program to know what your hardware is (e.g. to see the `APPLE SSD` hard-coded name of your internal NVME hard disk) - or if it can deeply scan your filesystem to read those things - then you have bigger problems, which make some of the added risks of this procedure to be moot. All this mod reveals is that you've slightly modified your system to make Tails work *better* with the hardware already known. Is that bad? You decide. It may depend on your situation.
 
-**If you are paranoid:** One advanced risk I *can* identify is that an advanced persistent threat might be able to link (your) prior Internet activity associated with following this procedure (e.g. the Tor IP addresses or other aspects of fingerprinting as collected online by Internet services) together with subsequent local inspections of your slightly modified, read-only filesystem on the Tails stick (e.g. physical inspection of the disk), or, if it is possible, remote Internet-based detection of the kernel and driver modifications implemented here. If that is an issue for you, please do not follow this procedure. However, good OpSec (about how you obtain or build T2Tails online) could make that risk almost negligible.
+**If you are paranoid:** One advanced risk I *can* identify is that an advanced persistent threat might be able to link (your) prior Internet activity associated with following this procedure (e.g. the Tor IP addresses or other aspects of fingerprinting as collected online by Internet services) together with subsequent local inspections of your slightly modified, read-only filesystem on the Tails stick (e.g. upon physical inspection of the disk), or, if it is possible, remote Internet-based detection of the kernel and driver modifications implemented here. If that is an issue for you, please do not follow this procedure. However, good OpSec about how you obtain or build T2Tails online could make this risk almost negligible.
 
-**Think about kernel safety:** None of the modding below affects the core anonymisation code in Tails. However, the kernel patches in the instructions are not vetted by Tails. Be knowledgeable of that. I don't know precisely how unsafe it is to use these T2 kernel patches created by aunali1 which are not (yet) accepted by the mainline Linux kernel developers. To me, the trade-off is worth it because Tails is not the only thing that I do to keep me safe. The full kernel replacement itself is safe because it is from official sources which is a codebase Tails uses and trusts in the first place.
+**Think about kernel safety:** None of the modding below affects the specific anonymisation code and design of Tails. However, the kernel patches in the instructions are not vetted by Tails. Be aware of this. I don't know exactly how unsafe it is to use these T2 kernel patches created by aunali1 which are not (yet) accepted by the mainline Linux kernel developers. To me, the trade-off is worth it because Tails is not the only thing that I do to keep myself safe. The full kernel replacement itself is very safe because it is from original sources which is a codebase Tails uses and trusts in the first place. (However, improvements will be made to incorporate the Debian-specific Kernel, as they do disable some upstream Kernel features which they don't think are tested or safe enough for Debian users.)
 
-**Firmware upgrade trade-offs:** It's a good idea to update the firmware of your T2 Mac's hardware because Apple often issues important security updates (e.g. for Intel microcode) that affect security on Linux as much as macOS. HOWEVER, there is a bad *hardware bug* (not just software byg) with Apple's T2 chip - the T2 kernel crashes. Updating to the latest firmware provided by Apple (in Big Sur) seems a mixed bag, it can both reduce and [increase](https://piunikaweb.com/2021/05/06/macos-big-sur-crashing-kernel-panic-issues-persist-after-11-3-1-update) kernel panic frequencies. If you are not already updated to recent Big Sur firmware, carefully decide whether to introduce new potential kernel panic problems. BEWARE, successfully booting from a self-created bootable Big Sur installer USB will itself upgrade most of your firmware, even if you don't install Big Sur after that. But fully installing Big Sur (whether on the internal SSD or to an external SSD while connected to the Mac) will do the fullest amount of internal hardware firmware upgrades in your T2 Mac, with extra upgrades observed such as Bluetooth. One silver lining: after Big Sur firmware updates, the waiting time after hitting Alt before the Apple logo is *significantly* less. Maybe it's worth it, once you have your patched Tails. See notes down the bottom for more tips on living with the T2 kernel panics.
+**Firmware upgrade trade-offs:** It's a good idea to update the firmware of your T2 Mac's hardware regularly, because Apple often issues important security updates (e.g. for the Intel CPU microcode) which affect security on Linux as much as macOS. HOWEVER, there can be a bad *hardware bug* (not just software byg) with Apple's T2 chip - the T2 kernel crashes. Updating to the latest firmware provided by Apple (in Big Sur) seems a mixed bag, it can both reduce and [increase](https://piunikaweb.com/2021/05/06/macos-big-sur-crashing-kernel-panic-issues-persist-after-11-3-1-update) kernel panic frequencies. If you are not already updated to recent Big Sur firmware, carefully decide whether to introduce new potential kernel panic problems. NOTE: successfully booting from a self-created bootable Big Sur installer USB alone will upgrade most of your firmware, even if you don't *install* Big Sur after that. Fully installing Big Sur (whether on the internal SSD or to an external SSD while connected to the Mac) will do the fullest amount of internal hardware firmware upgrades in your T2 Mac, with extra upgrades observed such as Bluetooth. One silver lining observed: after Big Sur firmware updates, the waiting time after hitting Alt before the Apple logo is *significantly* less. Maybe it's worth it, once you have your patched Tails. See notes down the bottom for more tips on dealing with the T2 kernel panics.
 
-Install and use 'T2Tails' at your own risk. NOT suggested for users who are new to anonymity OpSec or Linux newbies. Nonetheless, I will aim to refine the procedure over time for maximum safety (security, privacy, and anonymity).
+Install and use 'T2Tails' at your own risk. I will aim to refine the procedure over time for maximum safety (of security, privacy, and anonymity).
 
-## Instructions
+## Instructions - v2.0 procedure
+
+Either download my ready-made ISO (which was produced using the steps below) and burn as per official Tails instructions (for ISO), or follow the steps to more safely make your own T2Tails ISO.
 
 ### You will need
 
-Three USB sticks:
+This is just a suggestion.
 
-1. A base Tails USB to be your T2Tails building environment (minimum size: whatever Tails recommends)
+I use three USB sticks:
 
-2. A stick to be a large storage disk to build the customised kernel on (minimum size: 32GB, but 16GB might be OK, have not tested.)
+1. USB1: A base Tails USB to be the T2Tails building environment (Minimum size: whatever Tails recommends.)
 
-3. A third stick that you will turn into 'T2Tails' to boot from after process finished.
+2. USB2: A stick to be a large storage disk to build your customised kernel on (Minimum size: 32GB, but 16GB might be OK.) (This could potentially be the same stick as USB1 if it is large enough, e.g. create Persistent Storage or a manual Ext4 partition in the free space on the Tails stick using `Disks`.)
+
+3. USB3: A third stick to burn 'T2Tails' on and boot from after process finished.
 
 ### Tips before you start
 
-- Use a FAST USB drive for USB2 (i.e. one that reviews measure a high speed test). Copying or moving tens of thousands of Linux kernel source files takes a long time if it's not a very fast USB 3.0 drive. [Find one](https://www.rightisbest.com/fastest-usb-3-0-flash-drive-on-amazon-2018.html).
+- Use a FAST USB drive for USB2 (i.e. one that professional reviews note a fast speed test result). Copying or moving tens of thousands of Linux kernel source files takes a long time if it's not a very fast USB 3.0 drive. [Find one](https://www.rightisbest.com/fastest-usb-3-0-flash-drive-on-amazon-2018.html).
 
-- Due to kernel panics on the T2 hardware, it may be better to create your T2Tails stick on a non-T2 device such as an older Mac or another computer that boots Tails.
+- Due to kernel panics on the T2 hardware (when working in the non-modified Tails environment), it may be better to create your T2Tails stick on a non-T2 device such as an older Mac or another computer that boots Tails.
 
-- Do not attempt this process unless you are already comfortable with Linux and Terminal. This is not for newbies. E.g. if you don't know what the instruction `cd` already means, either don't do this or be willing to search things online to learn as you go. I try to make the steps clear enough to follow, but you could encounter errors that affect your own attempt to follow the steps. That can be time-consuming to troubleshoot and overcome.
-
-- I will update the steps for each new Tails as it comes out. The below process is for Tails 4.19rc1.
+- I will update the steps for each new Tails as it comes out (and provide an ISO for our convenience). The below process is for Tails 4.19.
 
 ### Other notes before you begin
 
-- I am not at the knowledge level of a Linux kernel or Debian developer. Some of the commands I say to do or packages I say to install might not necessarily be needed, but at least it works. It was so difficult to get this working in the first place. Create a GitHub issue if there's a meaningful improvement to contribute and we can trim down the steps to make it more elegant.
+- I am not at the skill level of a Linux kernel or Debian developer. Some of the commands I say to do or packages I say to install might not necessarily be needed, but at least it works. Create a GitHub issue if there's a meaningful improvement to contribute, and we can trim down the steps to make it more elegant.
 
 ### Steps
 
 #### Create your building environment
 
-First, burn current stable Tails version onto your USB3 (which will be your build environment Tails stick). (This can be done from within macOS.)
+First, download the current stable Tails ISO (not IMG), and place it onto USB2 inside any Linux-compatible filesystem such as exFAT or FAT32.
 
-Then, burn current stable Tails version onto your USB3 (which will become your 'T2Tails' stick). Don't clone it from the base Tails (USB1). Burn it from the original ISO/IMG downloaded from Tails website.
+Then, burn that ISO onto your USB1 (which will be your build environment Tails stick). This can all be done in macOS.
 
-From this point on, *do not* download/transfer/edit/mount/read any working files in macOS. Do *everything* only in Tails. (It needs to be ext4 due to symlinks inside the kernel source, and other file permission issues. Paragon extFS ruins ext4 files in macOS for this process. I tried.)
-
-Create an ext4 filesystem on USB2 with at least 64GB of space. (This could potentially be the same USB as USB1 if it is large enough, e.g. create Persistent Storage). One way is to create a VeraCrypt volume from within Tails (using the downloaded VeraCrypt binary), or format it unencrypted but with Linux (ext4) filesystem (e.g. via Tails 'Disks' program).
+Then from now on, *do not* download/transfer/mount/read/write ANY other working files in macOS. Do *everything* in the below procedure in Tails. (It needs to be Ext4 due to symlinks and other file permission issues inside the kernel source. Paragon extFS ruins Ext4 files in macOS for this process.)
 
 #### Download, patch, and recompile the Linux kernel version used by Tails
 
-You are now in Tails. Open Terminal and make sure prompt is at the default `~/`.
+You should now be in Tails (booted on USB1). 
+
+Next, create your proper working folder on USB2 in the proper Linux-native filesystem.
+
+First, copy (or re-download) `tails-amd64-4.19.iso` to the temporary Home folder at `/home/amnesia`.
+
+Then if necessary, reformat USB2 to be an Ext4 filesystem. One way is to create a VeraCrypt volume from within Tails (if you download and install the VeraCrypt binary), or format it unencrypted but with the Linux (Ext4) filesystem (e.g. via 'Disks').
+
+Then, mount and open the new Ext4 filesystem on USB2, decide on a working directory for your procedure, and copy the Tails ISO `tails-amd64-4.19.iso` into it.
+
+Then extract `tails-amd64-4.19.iso` (e.g. via right-click in Nautilus and 'Extract'), making sure the ISO contents are simply contained in a `tails-amd64-4.19` dir directly below your primary working directory.
+
+Now open Terminal and make sure prompt is at the default `~`.
 
 Install packages required for this procedure: 
 
 ```
 sudo apt update
-sudo apt install -y libncurses5-dev libncurses-dev libssl-dev flex bison build-essential libelf-dev bc gcc squashfs-tools
+sudo apt install -y libncurses5-dev libncurses-dev libssl-dev flex bison build-essential libelf-dev bc gcc squashfs-tools xorriso
 ```
 
 (Then Ctrl-C to return to prompt.)
 
-*Note about the packages: `libncurses5-dev libncurses-dev libssl-dev flex bison build-essential libelf-dev bc gcc` needed for the compiling. `squashfs-tools` is for the step to mod the Tails filesystem (to install the patched kernel and T2 device drivers).*
+*Note about the packages: `libncurses5-dev libncurses-dev libssl-dev flex bison build-essential libelf-dev bc gcc` needed for the compiling. `squashfs-tools` is for the step to mod the Tails filesystem (to install the patched kernel and T2 device drivers). `xorriso` needed to re-make our Tails ISO.*
 
 Now download the source code of the Linux kernel version chosen by Tails for the current version.
 
-Currently for Tails 4.19rc1, do this:
+Currently for Tails 4.19, do this:
 
 ```
-wget https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/linux-5.10.24.tar.gz
+wget https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/linux-5.10.13.tar.gz
 ```
 
 *Note: For now, compiling a pristine kernel source instead of an exactly-matched Debian-specific kernel works best. (For some reason, the latter resulted in a less than ideal, crappy, or even non-working experience inside Tails - things such as no Internet back in Tails 4.18, GNOME settings hanging, and more.) I will investigate because there are many reasons why, for advanced safety reasons, we should default to *exactly* the *Debian-specific* Linux kernel and not the non-Debian once at kernel.org. These instructions will evolve.*
 
 Then move that file from `~/` to your USB2 working folder, and extract it.
 
-In Terminal, `cd` to your extracted (untouched) kernel source folder. (Make sure it is the actual folder kernel source folder with `arch`, `block`, etc directly underneath it.)
+In Terminal, `cd` to your extracted (and so far untouched) kernel source folder. (Make sure it is the actual folder kernel source folder with `arch`, `block`, etc directly underneath it.)
 
-Now download the Linux kernel patches for T2 hardware by [aunali1](https://github.com/aunali1). We should use aunali1's closest matching [version](https://github.com/aunali1/linux-mbp-arch/releases/) to the current Tails kernel version (gathered by `uname -a`) but which is also a higher version than it (not lower). For Tails 4.19rc1 let's choose `v5.10.37-1`. Download and extract that, e.g. do:
+Now download the Linux kernel patches for T2 hardware by [aunali1](https://github.com/aunali1). We should use aunali1's closest matching [version](https://github.com/aunali1/linux-mbp-arch/releases/) to the current Tails kernel version (gathered by `uname -a`) but which is also a higher version than it (not lower). For Tails 4.19 let's choose `v5.10.37-1`. Download and extract that, e.g. do:
 
 ```
 wget -O ../T2patch.tar.gz https://github.com/aunali1/linux-mbp-arch/archive/refs/tags/v5.10.37-1.tar.gz
@@ -118,7 +128,7 @@ for i in ../linux-mbp-arch-5.10.37-1/*.patch; do patch -p1 --verbose < $i; done
 
 (Wait for Terminal to return to the prompt before continuing. It may take a minute to do all the patching.)
 
-*We just patched the kernel. Time to compile it.*
+*We've just patched the kernel. Time to compile it.*
 
 Copy the default Tails kernel configuration into your patched kernel source (we should match Tails as much as possible):
 
@@ -144,7 +154,7 @@ Now do the command to start compiling the patched Linux kernel with full CPU usa
 make deb-pkg -j`nproc`
 ```
 
-You might now have a few final kernel configuration choices to make for the compiling of the kernel. When compiling a Linux kernel, there are a million choices you can make for whether to enable certain features or to enable support for certain hardware. We've already copied 99% of these choices from the existing Tails default config, but inevitably, there are a few left since we're patching / recompiling. Currently, these are my choices, and the resultant T2Tails works: **unprivileged user namespace support: n (if 'y' I got a compile error), sensors n, NVIDIA stuff yes, Anonymous Shared Memory Subsystem n, android n, ntfs ones no**. Because advanced anonymity (and security) considerations are on my mind, I will investigate why extra choices are popping up despite copying the Tails existing config, and what best to do to reduce your T2Tails from "sticking out" (pun unintended) from the rest, if and where that matters. Safety is of paramount importance for all Tails users.
+You might now have a few final kernel configuration choices to make for the compiling of the kernel. When compiling a Linux kernel, there are a million choices you can make for whether to enable certain features or to enable support for certain hardware. We've already copied 99% of these choices from the existing Tails default config, but inevitably, there are a few left since we're patching / recompiling. Currently, these are my choices, and the resultant T2Tails works: **unprivileged user namespace support: n (if 'y' I got a compile error), sensors n, NVIDIA stuff yes, Anonymous Shared Memory Subsystem n, android n, NTFS ones no**. Because advanced anonymity (and security) considerations are on my mind, I will investigate why extra choices are popping up despite copying the Tails existing config, and what best to do to reduce your T2Tails from "sticking out" (pun unintended) from the rest, if and where that matters. Safety is of paramount importance for all Tails users.
 
 *Side note: if you wanted to potentially lessen the anonymity of the Tails system (at a deep/advanced fingerprinting level), but increase your privacy and security, you could go ahead and disable a plethora of features and hardware support in the kernel which you don't need. E.g. the command `localmodconfig` will make it compile to support ONLY your current specific hardware connected inside or to your machine (therefore for that to work you would compile on the T2 Machine itself). Research needs to be done as to whether this would meaningfully reduce your anonymity. E.g. Tails users already use different hardware to each other, therefore may have different 'fingerprints' of what their potentially readable list of hardware is (which is both a privacy *and* anonymity concern). Can a JavaScript-executing website, an Internet-connected program, or an unpatched exploit (malware) in Tails *already* fingerprint or deanonymise you, by reading the hardware information of your Tails system already? If so, locking down your Tails kernel (by way of recompiling and disabling support for hardware you don't use, e.g. a malicious USB stick of random chipset by an attacker) might only be a net positive, on the balance. (Fingerprinting in anonymity is a nightmare. The best choice for you depends on your threat model or the balance of multiple threat models that you're looking to defend against. I'll try to advise the best practice here. DON'T PANIC, and ALWAYS remember where you towel is.)*
 
@@ -158,30 +168,30 @@ Among the files it spits out, you will have 3 DEB files, ready to install.
 
 *We can copy this file from an existing Tails disk, decompress it, edit the files inside (e.g. install a T2-modded kernel and T2 drivers within its file structure), recompress them to a new `filesystem.squashfs`, then replace the original file on the Tails stick with that. Neat!*
 
-Insert your USB3 (with Tails already burned to it).
+Now, `cd` back up to your primary working directory, one level directly above the extracted `tails-amd64-4.19` folder (replace path below with your correct path):
 
-Open `Disks` program and mount that USB's `Partition 1: Tails` FAT32 partition by clicking the play button under that partition in the program. It will mount to `/media/amnesia/Tails`.
+```
+cd '/path/directly/above-the-extracted-Tails-ISO-folder/'
+```
 
-From there it is easy to modify any of the core Tails files (if not currently booting from the stick itself), and yet not destroy its ability to boot thereafter. (If this is a scary discovery to you, then this is why read-only media - at the *physical* level - is recommended for increased/maximum Tails security.)
+Now decompress the extracted Tails squashfs file into a folder called `squashfs-root` in amnesia Home:
 
-Change your working directory to the Amnesia home folder:
+```
+sudo unsquashfs -d /home/amnesia/squashfs-root tails-amd64-4.19/live/filesystem.squashfs
+```
+
+Now change your working directory to the Amnesia home folder:
 
 ```
 cd ~/
 ```
 
-Decompress the base Tails stick's filesystem into a folder called `squashfs-root` in amnesia Home:
-
-```
-sudo unsquashfs -d /home/amnesia/squashfs-root /lib/live/mount/medium/live/filesystem.squashfs
-```
-
-Copy your three kernel DEB files into the `squashfs-root` folder (it needs root permission), e.g. do the pattern `sudo cp '/path/to/my/external/USB/working/folder/linux-libc-dev_5.10.13-1_amd64.deb' squashfs-root` (or use a Root Terminal-launched Nautilus).
+Copy your three kernel DEB files into the `squashfs-root` folder (it needs root permission), e.g. use a Root Terminal-launched Nautilus or do the pattern `sudo cp '/path/to/my/external/USB/working/folder/etc/linux-libc-dev_5.10.13-1_amd64.deb' squashfs-root`.
 
 Download the latest T2 device driver files:
 
 ```
-git clone https://github.com/t2linux/apple-bce-drv /home/amnesia/apple-bce-drv
+git clone https://github.com/t2linux/apple-bce-drv apple-bce-drv
 ```
 
 Create and edit a `dkms.conf` file in the downloaded folder and place the below contents into it. One way is:
@@ -222,7 +232,7 @@ sudo mkdir squashfs-root/lib/live/mount/medium
 sudo mount --bind /lib/live/mount/medium squashfs-root/lib/live/mount/medium
 ```
 
-Backup the current USB1's kernel files so that we don't unnecessarily destroy them during the chroot's kernel replacement process:
+Backup the current build environment's kernel files so that we don't unnecessarily destroy them during the chroot's kernel replacement process:
 
 ```
 sudo mv /lib/live/mount/medium/live/initrd.img /lib/live/mount/medium/live/initrd.img.bak
@@ -246,7 +256,7 @@ Now chroot into the folder:
 sudo chroot squashfs-root
 ```
 
-Mandatory step: In as low a voice as possible, say "I am Chroot." Always. Every time.
+Mandatory step: In as low a voice as possible, say, "I am Chroot." Every time.
 
 Do this to help make the commands in chroot perform smoothly:
 
@@ -262,15 +272,14 @@ dpkg -i linux-headers-*.deb
 dpkg -i linux-image-*.deb
 ```
 
-(Wait for it to return to prompt. May take a minute.)
+(Wait for it to return to prompt. It may take a minute.)
 
 This creates two installed kernel files `initrd.img` and `vmlinuz` and other necessary files in the main chroot filesystem that work together to enable automatic T2 driver loading at boot.
 
 Install `dkms` in the chroot (the package to install the T2 driver):
 
 ```
-apt update
-apt install -y dkms
+apt update && apt install -y dkms
 ```
 
 (Then Ctrl-C to return to prompt.)
@@ -278,10 +287,10 @@ apt install -y dkms
 Install the T2 driver in the chroot, and in a way that will work with our newly added T2Tails-modded kernel:
 
 ```
-dkms install -m apple-bce -v drv -k 5.10.24
+dkms install -m apple-bce -v drv -k 5.10.13
 ```
 
-Now do this command to make the T2 internal keyboard + trackpad automatically work at boot:
+Now do this command which makes the internal (T2) keyboard + trackpad automatically work at boot:
 
 ```
 echo "apple-bce" >> /etc/modules-load.d/t2.conf
@@ -292,13 +301,10 @@ Finally clean up unnecessary junk that we added in the chroot:
 ```
 apt clean
 rm *.deb
-rm -rf /var/cache/apt/*
-rm -rf /var/cache/man/*
-rm -rf /var/lib/apt/lists/*
-rm -rf /tmp/* ~/.bash_history
+rm -rf /var/cache/apt/* /var/cache/man/* /var/lib/apt/lists/* /tmp/* ~/.bash_history
 ```
 
-(Note: I have to investigate a lot more regarding the full extent of what should be cleaned up so that the replacement Tails filesystem is as close to nothing added as humanly possible. (This includes not having a second / two kernel version folders in `lib/modules`.) I'll improve this and please help via a ticket if you know ways to improve it already.)
+(Note: I have to investigate more regarding the full extent of exactly what should be cleaned up, so that the modded Tails filesystem is as close to *as little* added as humanly possible. (This includes not having a second kernel version folder under `/lib/modules`.) I'll improve this and please help via a ticket if you know ways to improve it yourself.)
 
 Now exit the chroot:
 
@@ -323,7 +329,7 @@ sudo umount squashfs-root/sys
 sudo umount squashfs-root/dev
 ```
 
-*(Note to self: These six lines are exhausting to input (both times). If not scripted, can we at least combine them those a one-liner? What can I say? "I'll be back.")*
+*(Note to self: These six lines are exhausting to input. If not scripted, can we at least combine them in a one-liner? Next time, do the first two, then try to combine the rest via: `sudo umount squashfs-root?*` or `sudo umount squashfs-root/*`)*
 
 More cleanup (I will make this more comprehensive later):
 
@@ -331,63 +337,81 @@ More cleanup (I will make this more comprehensive later):
 sudo rmdir squashfs-root/lib/live/mount/medium
 ```
 
-Delete the original Tails kernel and filesystem files on USB3 (which we will replace with T2-modded ones):
+Now `cd` back to your working directory directly above the extracted ISO contents:
 
 ```
-rm /media/amnesia/Tails/live/filesystem.squashfs
-rm /media/amnesia/Tails/live/initrd.img
-rm /media/amnesia/Tails/live/vmlinuz
-```
-Move your two new T2-modded kernel files to the USB3:
-
-```
-sudo mv /lib/live/mount/medium/live/initrd.img /lib/live/mount/medium/live/vmlinuz /media/amnesia/Tails/live
+cd '/path/directly/above-the-extracted-Tails-ISO-folder/'
 ```
 
-(Ignore the ownership permission error. It works.)
+Delete the original Tails kernel and filesystem files in the extracted ISO contents:
 
-Restore USB1's original kernel files because they got modified during the chroot's kernel install: 
+```
+sudo rm tails-amd64-4.19/live/filesystem.squashfs tails-amd64-4.19/live/initrd.img tails-amd64-4.19/live/vmlinuz
+```
+
+Then move the two T2-modded kernel files into the extracted ISO contents:
+
+```
+sudo mv /lib/live/mount/medium/live/initrd.img /lib/live/mount/medium/live/vmlinuz tails-amd64-4.19/live
+```
+
+Restore your current build environment's original kernel files, since they got modified during the chroot's kernel package installation: 
 
 ```
 sudo mv /lib/live/mount/medium/live/initrd.img.bak /lib/live/mount/medium/live/initrd.img
 sudo mv /lib/live/mount/medium/live/vmlinuz.bak /lib/live/mount/medium/live/vmlinuz
 ```
 
-Then, as a safety recommendation, do this to make your current live Tails stick be read-only again:
+Then, as a safety recommendation, revert your current mounted live Tails stick to be fully read-only again:
 
 ```
 sudo mount -o remount,ro /lib/live/mount/medium
 ```
 
-Now, compress your modded Tails filesystem and write this file to the USB3:
+Now compress your modded Tails filesystem and output the file to the extracted ISO contents:
 
 ```
-sudo mksquashfs squashfs-root /media/amnesia/Tails/live/filesystem.squashfs -b 1024k -comp xz -Xbcj x86 -e boot
+sudo mksquashfs /home/amnesia/squashfs-root tails-amd64-4.19/live/filesystem.squashfs -b 1024k -comp xz -Xbcj x86 -e boot
 ```
 
 (It might take about 20 minutes or more, depending on your system.)
 
-One final step is needed to make Tor successfully connect in Tails 4.19 onwards. You must add the kernel boot parameter `modprobe.blacklist=thunderbolt`. To make it convenient for you, add it permanently to the Tails stick's grub config. 
+One final step to make Tor successfully connect in Tails 4.19 onwards: You must add the kernel boot parameter `modprobe.blacklist=thunderbolt`. To make it convenient, add it permanently to the Tails stick's grub config. 
 
-*(For most users, this shouldn't have a deanonymising effect. You already are known to use Tails with your specific hardware at the local physical level. But consider the possibility for rogue apps to to read your `/proc/cmdline` file as an advanced deanonymising technique.)*
+*(For most users, this shouldn't have a deanonymising effect. At the local/physical level, you're already observed to use Tails with your specific hardware. But do consider the possibility for malicious apps to to read your `/proc/cmdline` file as an advanced deanonymising technique.)*
 
 Do:
 
 ```
-nano /media/amnesia/Tails/EFI/debian/grub.cfg
+sudo nano tails-amd64-4.19/EFI/debian/grub.cfg
 ```
 
-Then: add `modprobe.blacklist=thunderbolt` to the list of parameters (with a space before and after) in the (default) `live` entry parameters list, and save changes to file.
+Scroll down to find the `live` grub entry parameters list, and add the text `modprobe.blacklist=thunderbolt` anywhere among that list of parameters (with a space before and after it). Then save changes to file. You may want to add or remove other kernel parameters while you're here, depending on what peripherals, features, or tweaks you want to permanently take advantage of.
 
-(TODO: make it a `sed` find/replace one-liner.)
+Now create the T2Tails ISO from your T2-modded extracted ISO contents:
 
-TA-DA!! Done. Boot your new **T2Tails** (the USB3) on your T2 Mac and the internal keyboard + trackpad will automatically work.
+```
+xorriso -as mkisofs \
+   -r -V 'T2Tails 4.19 v2.0' \
+   -o $HOME"/"T2Tails-4.19-v2.0.iso \
+   -b isolinux/isolinux.bin \
+   -c isolinux/boot.cat \
+   -boot-load-size 4 -boot-info-table -no-emul-boot \
+   -eltorito-alt-boot \
+   -e EFI/BOOT/BOOTX64.EFI \
+   -no-emul-boot -isohybrid-gpt-basdat -isohybrid-apm-hfsplus \
+   tails-amd64-4.19
+```
+
+A T2Tails ISO will be created in the temporary `/home/amnesia` location. Make sure to save it to your USB2/persistent storage for later reference.
+
+Now burn and boot your new **T2Tails** on your T2 Mac, and the internal keyboard + trackpad will automatically work!
 
 ## The T2Tails experience
 
 Observations and tips:
 
-- To get Internet and Tor working (I use Ethernet), currently I: 1. Connect Ethernet (via USB-C adapter) after Tails has loaded past the Welcome screen 2. Do `lspci` 3. Go to `Network` GNOME settings and (if need be disconnect 'Apple Ethernet' then) select `Realtek` to connect. Then the Tor Connection assistant will pop up and you can connect you to Tor.
+- To get Internet and Tor working (I use Ethernet), currently I: 1. Connect Ethernet (via USB-C adapter) after Tails has loaded past the Welcome screen 2. Do `lspci` 3. Go to `Network` GNOME settings and (if need be, disconnect 'Apple Ethernet' then) select `Realtek` to connect. Then the Tor Connection assistant will pop up and you can connect you to Tor.
 
 - Kernel panics may be an ongoing problem. I will experiment and update here with any tricks that mitigate Apple's hardware-caused kernel panics.
 	- So far, the main tip: have as little USB-C peripherals connected as possible at all times.
@@ -424,4 +448,4 @@ Observations and tips:
 
 - Everyone involved with t2linux.org - Thank you very much!
 - The amazing aunali1 in particular
-- Me (LOL.) (Let's face it.) ("Many brain cells died to bring us this information...")
+- Me. (Let's face it.) ("Many brain cells died to bring us this information...")

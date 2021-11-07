@@ -32,71 +32,85 @@ I'll do the best I can to advise best practice for both stability and safety, in
 
 Install and use 'T2Tails' at your own risk. I hope to refine the procedure over time for maximum safety (in security, privacy, and anonymity).
 
-## Instructions - v2.1 procedure
+## Instructions - v2.2 procedure
 
 Either download my ready-made ISO (which was produced using the steps below) and burn as per my simple instructions, or follow the steps to more safely make a T2Tails ISO yourself.
 
-**For Tails 4.22 I won't be providing a ready-made ISO. I'm busy and it is inconvenient to upload the large file to Github.**
+**Currently I am not providing a ready-made ISO. I'm busy and it's inconvenient to upload large files to Github.**
 
 ### You will need
 
 This is just a suggestion.
 
-I use three USB sticks:
+I use three storage disks:
 
-1. USB1: A base Tails USB to be the building environment (Minimum size: whatever Tails recommends.)
+1. DISK1: A bootable Tails disk to be the building environment (Minimum size: whatever Tails recommends.)
 
-2. USB2: A stick to be a large storage area in which to compile your customised kernel (Minimum size: 32GB, though 16GB might be OK.) (This could potentially be the same stick as USB1 if it is large enough, e.g. create some Persistent Storage or a manual Ext4 partition in the free space on the Tails stick using GNOME `Disks`.)
+2. DISK2: A large storage area in which to compile your customised kernel (Minimum size: 32GB, though 16GB might be OK.) (This could potentially be the same storage as DISK1 if it is large enough, e.g. create some Persistent Storage or a manual Ext4 partition in the free space on the Tails stick using GNOME `Disks`.)
 
-3. USB3: A third stick to burn 'T2Tails' on and boot from after the process finished.
+3. DISK3: A third stick to burn 'T2Tails' on and boot from after the process finished.
 
 ### Tips before you start
 
-- Use a FAST USB drive for USB2 (i.e. one that online reviews have noted a fast speed test result for). Copying or moving tens of thousands of Linux kernel source files takes a long time if it's not a very fast USB 3.0 drive. [Find one](https://www.rightisbest.com/fastest-usb-3-0-flash-drive-on-amazon-2018.html). Even better would be an external NVMe disk on USB 3.0 or faster connection.
+- You will be doing extensive file operations on the storage you use. USB sticks can be very slow and result in a bad experience when compiling kernel, moving hundreds of thousands of files at once (involved in the moving, copying, extracting of squashfs filesystems or extracted kernel source dirs), etc. Use fast storage technology and connection for DISK2. I recommended fast external (or internal) SSD with minimum fast USB 3.0 connection. Correct cabling also makes a big difference.
 
 - If you want to compile the kernel on your T2 machine itself (in a distro like stock Tails), beware of kernel panics on some Linux ISOs (including untouched Tails). E.g. to make stock Tails iBridge-stable, add to Tails boot parameter `amdgpu.dpm=0` (and if still receive panics, others say to try `intel_iommu=on` and `modprobe.blacklist=thunderbolt`).
 
-- I will update the steps for each new Tails as it comes out (and provide an ISO for convenience). The below process is for Tails 4.22.
+- I will update the steps for each new Tails as it comes out (and provide an ISO for convenience). The below process is for Tails 4.24.
 
 ### Other notes before you begin
 
 - I am not at the elite skill level of a Debian or Linux kernel developer. Some of the commands I say to do or packages I say to install might not necessarily be needed, but at least it works. Create a GitHub issue if there's a meaningful improvement to contribute, and we can make the steps more elegant.
 
+- Where I instruct to do multi-line commands, just paste whole code box selection and perform at once in Terminal. Makes it faster.
+
 ### Steps
 
 #### Create your building environment
 
-First download the current stable Tails ISO (not IMG), and place it onto USB2 inside any Linux-compatible filesystem such as exFAT or FAT32. (We will need to use that ISO to modify it later.)
+First download the current stable Tails ISO (not IMG), and place it onto DISK2 inside any Linux-compatible filesystem such as exFAT or FAT32. (We will need to use that ISO to modify it later.)
 
-Then, burn that ISO onto your USB1 (which will be your build environment Tails stick). This can all be done in macOS.
+Then, burn that ISO onto your DISK1 (which will be your build environment Tails stick). This can all be done in macOS.
 
 Then from this point, *do not* download/transfer/mount/read/write ANY other files for this procedure in macOS. Do *everything* below in Tails. (It needs to be Ext4 due to symlinks and other file permission issues in the kernel source files. Paragon extFS ruins Ext4 files in macOS for this process. I tried.)
 
 #### Download, patch, and recompile the Linux kernel version used by Tails
 
-You should now be in Tails (booted on USB1).
+You should now be in Tails (booted on DISK1).
 
-If necessary, reformat USB2 as an Ext4 filesystem. (Whether encrypted like VeraCrypt, or format unencrypted but with the Linux (Ext4) filesystem e.g. using GNOME 'Disks'.)
+If necessary, reformat DISK2 as an Ext4 filesystem. (Whether encrypted like VeraCrypt, or format unencrypted but with the Linux (Ext4) filesystem e.g. using GNOME 'Disks'.)
 
-If necessary, copy (or re-download) `tails-amd64-4.22.iso` to the temporary Home folder at `/home/amnesia`. Then after you mount and open the new Ext4 filesystem on USB2, decide on a working directory for your creation process, and copy the Tails ISO `tails-amd64-4.22.iso` into that working directory.
+If necessary, copy (or re-download) `tails-amd64-4.24.iso` to the temporary Home folder at `/home/amnesia`. Then after you mount and open the new Ext4 filesystem on DISK2, decide on a working directory for your creation process, and copy the Tails ISO `tails-amd64-4.24.iso` into your working directory.
 
-Extract `tails-amd64-4.22.iso` (e.g. right-click in Nautilus and 'Extract'), making sure the ISO contents are directly contained in a `tails-amd64-4.22` dir directly below your working directory.
+Extract `tails-amd64-4.24.iso` (e.g. right-click in Nautilus and 'Extract Here'), making sure the ISO contents are directly contained in a `tails-amd64-4.24` dir directly below your working directory.
 
-Now open Terminal and install packages required for this procedure: 
+Now, for your convenience, I suggest you change Terminal to root user, due to doing so many sudo commands for the rest of the process. (No permissions or security issues are observed by me.) You can also open `Root Terminal` in Tails (then `cd` to working directory). Otherwise, you'll have to enter admin password for all `sudo` commands.
 
 ```
-sudo apt update
-sudo apt install -t buster-backports libzstd1
+sudo su
+```
+
+First - and this is needed since Sep 2021 for some reason (will probably be resolved in Tails 5) - remove the forcing of `sid` repo for `squashfs-tools` package so that we can easily install it.
+
+```
+sudo sed -i 's/squashfs-tools/hopes-now-unsquashed-ffs/g' /etc/apt/preferences
+```
+
+Now open Terminal and install the packages required for this procedure: 
+
+```
+sudo apt update && \
+sudo apt install -t buster-backports libzstd1 && \
 sudo apt install -y libncurses5-dev libncurses-dev libssl-dev flex bison build-essential libelf-dev bc gcc squashfs-tools xorriso zstd
 ```
 
 *Note about the packages: `libncurses5-dev libncurses-dev libssl-dev flex bison build-essential libelf-dev bc gcc` needed for the compiling. `squashfs-tools` (and `libzstd1`) is for the step to mod the Tails filesystem (to install the patched kernel and T2 device drivers). `xorriso` needed to re-make our Tails ISO. `zstd` is because depending on what kernel version I instruct you to use for a given Tails version, it may be needed.*
 
-Now `cd` to your primary working directory on USB2.
+Now `cd` to your primary working directory on DISK2.
 
 Download the source code of the Linux kernel version that I suggest to use for the current Tails version. (Ordinarily I'd opt to choose the same or close to that chosen by Tails for the current version, but since Tails 4.20 I am choosing a newer kernel version as it resolves a major issue in Tor Connection Assistant otherwise not working.)
 
-So currently for Tails 4.22, do this:
+So currently for Tails 4.24, do this:
 
 ```
 wget https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/linux-5.12.19.tar.gz
@@ -115,7 +129,7 @@ cd linux-5.12.19
 Now download and extract the Linux kernel patches for T2 hardware from [aunali1](https://github.com/aunali1), e.g. do:
 
 ```
-wget -O ../T2patch.tar.gz https://github.com/aunali1/linux-mbp-arch/archive/refs/tags/v5.12.19-2.tar.gz
+wget -O ../T2patch.tar.gz https://github.com/aunali1/linux-mbp-arch/archive/refs/tags/v5.12.19-2.tar.gz && \
 tar -xvf ../T2patch.tar.gz -C ../
 ```
 
@@ -167,22 +181,16 @@ Among the files it spits out, you will have 3 kernel DEB files ready to install.
 
 *We can copy this file from an existing Tails disk, decompress it, edit the files inside (to e.g. install a T2-modded kernel and T2 drivers inside its file structure), recompress the files into a replacement `filesystem.squashfs`, then replace the original file on the Tails stick with that. Neat!*
 
-Now `cd` back up to your primary working directory, one level directly above the extracted `tails-amd64-4.22` folder:
+Now `cd` back up to your primary working directory, one level directly above the extracted `tails-amd64-4.24` folder:
 
 ```
 cd ..
 ```
 
-Now, for your convenience, I suggest you change Terminal to root user, due to doing so many sudo commands for the rest of the process. You can also open `Root Terminal` in Tails (then `cd` to working directory). Otherwise, you'll have to enter admin password for all `sudo` commands.
-
-```
-sudo su
-```
-
 Decompress the extracted Tails squashfs file into a folder called `squashfs-root` inside your working folder:
 
 ```
-sudo unsquashfs -d squashfs-root tails-amd64-4.22/live/filesystem.squashfs
+sudo unsquashfs -d squashfs-root tails-amd64-4.24/live/filesystem.squashfs
 ```
 
 Now copy your three kernel DEB files into the `squashfs-root` folder (which needs root or sudo):
@@ -227,29 +235,30 @@ sudo cp -R apple-bce-drv squashfs-root/usr/src
 
 *Instead of copying large amounts of required system files into the chroot for modifying what we need to do inside it, we can bind-mount certain folders from your current live Tails system into it. (It's like temporary symlinking.)*
 
-Do these three commands to make it possible to smoothly update the chroot's kernel:
+Do the following to make it possible to smoothly update the chroot's kernel:
 
 ```
-sudo mount -o remount,rw /lib/live/mount/medium
-sudo mkdir -p squashfs-root/lib/live/mount/medium
+sudo mount -o remount,rw /lib/live/mount/medium && \
+sudo mkdir -p squashfs-root/lib/live/mount/medium && \
 sudo mount --bind /lib/live/mount/medium squashfs-root/lib/live/mount/medium
 ```
 
-Backup the current build environment's kernel files so that we don't unnecessarily destroy them during the chroot's kernel replacement process:
+Backup the current build environment's kernel files so that we don't unnecessarily destroy them during the in-chroot kernel replacement process:
 
 ```
-sudo mv /lib/live/mount/medium/live/initrd.img /lib/live/mount/medium/live/initrd.img.bak
+sudo mv /lib/live/mount/medium/live/initrd.img /lib/live/mount/medium/live/initrd.img.bak && \
 sudo mv /lib/live/mount/medium/live/vmlinuz /lib/live/mount/medium/live/vmlinuz.bak
 ```
 
-Now do the following six commands to bind various system folders to the chroot, to make kernel modding and driver installation completely smooth inside it:
+Now do the following to bind various system folders to the chroot, as a clean way to make kernel modding and driver installation easy and smooth inside it:
 
 ```
-sudo mount --bind /dev squashfs-root/dev
-sudo mount --bind /sys squashfs-root/sys
-sudo mount --bind /proc squashfs-root/proc
-sudo mount --bind /run squashfs-root/run
-sudo mount --bind /dev/pts squashfs-root/dev/pts
+sudo mount --bind /tmp squashfs-root/tmp && \
+sudo mount --bind /dev squashfs-root/dev && \
+sudo mount --bind /sys squashfs-root/sys && \
+sudo mount --bind /proc squashfs-root/proc && \
+sudo mount --bind /run squashfs-root/run && \
+sudo mount --bind /dev/pts squashfs-root/dev/pts && \
 sudo mount --bind /etc/apt squashfs-root/etc/apt
 ```
 
@@ -259,19 +268,13 @@ Now chroot into the folder:
 sudo chroot squashfs-root
 ```
 
-Mandatory step: In as low a voice as possible, say, "I am Chroot." Every time. (It will give you good luck.)
-
-Do this to help make the commands in chroot perform smoothly:
-
-```
-export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-```
+Mandatory step: In as low a voice as possible, say, "I am Chroot." Every time. (It gives you good luck.)
 
 Now install the three kernel files in the chroot with these three commands (you are now root user inside this chroot):
 
 ```
-dpkg -i linux-libc-*.deb
-dpkg -i linux-headers-*.deb
+dpkg -i linux-libc-*.deb && \
+dpkg -i linux-headers-*.deb && \
 dpkg -i linux-image-*.deb
 ```
 
@@ -279,7 +282,7 @@ dpkg -i linux-image-*.deb
 
 This creates two installed kernel files `initrd*.img` and `vmlinuz*` and other necessary files in the main chroot filesystem that work together to enable automatic T2 driver loading at boot.
 
-Now install `dkms` (which is the package to install the T2 driver) in the chroot:
+Now install `dkms` (the package to install the T2 driver) in the chroot:
 
 ```
 apt update && apt install -y dkms
@@ -297,13 +300,15 @@ Now do this command to makes the internal (T2) keyboard + trackpad automatically
 echo "apple-bce" > /etc/modules-load.d/t2.conf
 ```
 
+Now is where you may want to add some of your own personal chroot modifications (e.g. install other packages) that you may deem critical (and if you don't deem doing so a compromise to the OpSec of your anonymity). E.g. some packages, like any driver-related ones, are not easy to make take effect unless they are installed before a Tails session boots.
+
 Finally, clean up unnecessary junk that we added in the chroot:
 
 ```
 apt clean && rm *.deb && rm -rf /var/cache/apt/* /var/cache/man/* /var/lib/apt/lists/* /tmp/* /home/amnesia/.bash_history
 ```
 
-(Note: I have to investigate more regarding the full extent of exactly what should be cleaned up, so that the modded Tails filesystem is as close to *as little* extra things added as possible. (This includes not having a second kernel version folder under `/lib/modules`.) I'll improve this, and please help via a ticket if you know ways to improve it yourself.)
+(Note: I have to investigate further regarding the full extent of exactly what should be cleaned up so that the modded Tails filesystem is as close to *as little* extra files/packages added as possible. (This includes not having a second kernel version folder under `/lib/modules`.) I'll improve this, and please help via a ticket if you know ways to improve it yourself.)
 
 Now exit the chroot:
 
@@ -311,21 +316,16 @@ Now exit the chroot:
 exit
 ```
 
-Unmount the live kernel folder bind in the chroot:
+Unmount the live kernel folder bind in the chroot, as well as the other 6 dirs we mounted into the chroot (ignore the warnings on the third command, the asterisk wildcard is just a hacky shortcut to make us do less input):
 
 ```
-sudo umount squashfs-root/lib/live/mount/medium
-```
-
-Unmount the other 6 dirs we mounted into the chroot (Ignore the warnings on the third command, the asterisk wildcard is just a hacky shortcut to make us do less commands):
-
-```
-sudo umount squashfs-root/etc/apt
-sudo umount squashfs-root/dev/pts
+sudo umount squashfs-root/lib/live/mount/medium && \
+sudo umount squashfs-root/etc/apt && \
+sudo umount squashfs-root/dev/pts && \
 sudo umount squashfs-root/*
 ```
 
-More cleanup (I hope to make this more comprehensive later):
+More cleanup (I hope to make cleanup more comprehensive later):
 
 ```
 sudo rmdir squashfs-root/lib/live/mount/medium
@@ -334,19 +334,19 @@ sudo rmdir squashfs-root/lib/live/mount/medium
 Now delete the original Tails kernel and filesystem files from the extracted ISO contents:
 
 ```
-sudo rm tails-amd64-4.22/live/filesystem.squashfs tails-amd64-4.22/live/initrd.img tails-amd64-4.22/live/vmlinuz
+sudo rm tails-amd64-4.24/live/filesystem.squashfs tails-amd64-4.24/live/initrd.img tails-amd64-4.24/live/vmlinuz
 ```
 
 Then move the two T2-modded kernel files into the extracted ISO contents:
 
 ```
-sudo mv /lib/live/mount/medium/live/initrd.img /lib/live/mount/medium/live/vmlinuz tails-amd64-4.22/live
+sudo mv /lib/live/mount/medium/live/initrd.img /lib/live/mount/medium/live/vmlinuz tails-amd64-4.24/live
 ```
 
 Restore your current build environment's original kernel files, since they got modified during the chroot's kernel package installation: 
 
 ```
-sudo mv /lib/live/mount/medium/live/initrd.img.bak /lib/live/mount/medium/live/initrd.img
+sudo mv /lib/live/mount/medium/live/initrd.img.bak /lib/live/mount/medium/live/initrd.img && \
 sudo mv /lib/live/mount/medium/live/vmlinuz.bak /lib/live/mount/medium/live/vmlinuz
 ```
 
@@ -359,55 +359,69 @@ sudo mount -o remount,ro /lib/live/mount/medium
 Now compress your modded Tails filesystem, outputting the file into the extracted ISO contents:
 
 ```
-sudo mksquashfs squashfs-root tails-amd64-4.22/live/filesystem.squashfs -b 1024k -comp xz -Xbcj x86 -e boot
+sudo mksquashfs squashfs-root tails-amd64-4.24/live/filesystem.squashfs -b 1024k -comp xz -Xbcj x86 -e boot
 ```
 
-(It could take about 20 minutes or more, depending on your system.)
+(It could take about 20 minutes or more, depending on your system. Why so long? This command has to pack about 150,000 files into a single file without a single mistake - that's a lot of files to process even on modern storage, and no mean feat!)
 
-One final step may be required on your T2 model for iBridge panics to not occur in Tails: You must add the kernel boot parameter `amdgpu.dpm=0`. (It's as important as saying, "I am Chroot.") To make it convenient, add it permanently to the Tails's grub config.
+One step below may be required on your T2 model for iBridge panics to not occur in Tails: You must add the kernel boot parameter `amdgpu.dpm=0`. (It's as important as saying, "I am Chroot.") To make it convenient, add it permanently to the Tails's grub config.
 
 Do:
 
 ```
-sudo nano tails-amd64-4.22/EFI/debian/grub.cfg
+sudo nano tails-amd64-4.24/EFI/debian/grub.cfg
 ```
 
 Scroll down to find the `live` grub entry parameters list, and add the text `amdgpu.dpm=0` anywhere among that list of parameters (with a space before and after it). Then save changes to file. You may want to add or remove other kernel parameters while you're here, depending on what peripherals, features, or tweaks you want to persistently take advantage of. I found that `modprobe.blacklist=thunderbolt` makes some USB devices not be detected as often, probably a clue is that `lspci` shows `Thunderbolt 3 USB controller`.
 
 *(For most users, this parameter addition shouldn't have a deanonymising effect. At the local/physical level, you're already observed to use Tails with your specific hardware. But do consider the possibility for malicious apps in Tails to to read your `/proc/cmdline` file as an advanced deanonymising technique. Obscurity (e.g. using unusual hardware or especially locked down configurations) can be good for privacy, but is an enemy of anonymity.)*
 
-Ootionally, create a T2Tails ISO from your extracted and T2-modded ISO contents:
+One more thing: since recent versions of Tails, there's a bug preventing Tails from booting on some hardware including T2 Mac hardware. The bug is not fixed yet. Workaround is to copy an older version of `BOOTX64.EFI` (the 1.3 MB version) into your T2Tails stick files then it boots. I am not sure is there is a security drawback of doing that, but I think it's unlikely.
+
+Ways to get the older `BOOTX64.EFI` file:
+
+- Download an older version of Tails (e.g. 4.18) from linuxtracker.org
+- If you know git well, probably can build an older version of Tails ISO using their complicated build process.
+- Find any Debian live ISO from Debian archives that is older than mid-2020, which contains a `bootx64.efi` file of the 1.3 MB size. Capitalise to `BOOTX64.EFI` if need be, it works.
+
+Then Overwrite the 900X KB file at `tails-amd64-4.24/EFI/BOOT/BOOTX64.EFI` with the older 1.3 MB one.
+
+Now optionally, create a T2Tails ISO from your extracted and T2-modded ISO contents:
 
 ```
 xorriso -as mkisofs \
-   -r -V 'T2Tails 4.22 v2.1' \
-   -o T2Tails-4.22-v2.1.iso \
-   -b syslinux/isolinux.bin \
-   -c syslinux/boot.cat \
+   -r -V 'T2Tails 4.24 v2.2' \
+   -o T2Tails-4.24-v2.2.iso \
+   -b isolinux/isolinux.bin \
+   -c isolinux/boot.cat \
    -boot-load-size 4 -boot-info-table -no-emul-boot \
    -eltorito-alt-boot \
    -e EFI/BOOT/BOOTX64.EFI \
    -no-emul-boot -isohybrid-gpt-basdat -isohybrid-apm-hfsplus \
-   tails-amd64-4.22
+   tails-amd64-4.24
 ```
 
 The T2Tails ISO will be created in your working folder.
 
 You can make a successful bootable T2Tails stick in two ways:
 
-- Burn the ISO to USB3 with `Tails Installer` in Tails (and not e.g. Etcher).
+- Burn the ISO to DISK3 with `Tails Installer` in Tails (and not e.g. Etcher).
 
-- Format USB3 as a big FAT partition then simply copy over everything in the pre-ISO `tails-amd64-4.22` folder onto the FAT stick, or extract files from T2Tails ISO then place them on the stick.
+- Format DISK3 as a big FAT partition then just copy over everything in the pre-ISO `tails-amd64-4.24` folder onto the FAT stick, or extract files from T2Tails ISO then place them on the stick.
 
 Congratulations, you now have **T2Tails** bootable on your T2 Mac! The internal keyboard + trackpad will automatically work.
 
 ## The T2Tails experience
 
-Worthwhile tips:
+Worthy tips:
 
-- Sometimes to get Internet and Tor working (I use Ethernet), I need to do some or all of the following steps: 1. Connect Ethernet (via USB-C adapter) after Tails has loaded past the Welcome screen 2. Do `lspci` 3. Go to `Network` GNOME settings window (and if need be, disconnect 'Apple Ethernet'), then select the alternative Ethernet NIC to connect. Then Tor in Tails is able to connect as normal.
+- To get Internet and Tor working (I use Ethernet), sometimes I need to do some or all of the following: 1. Connect Ethernet (via USB-C adapter) after Tails has loaded past the Welcome screen 2. Do `lspci` 3. Go to `Network` GNOME settings window (and if need be, disconnect 'Apple Ethernet'), then select the alternative Ethernet NIC to connect. Then Tor in Tails is able to connect as normal.
 
 ## CHANGELOG notes
+
+Since v2.2 procedure:
+
+- Fix for Tails not booting. Sounds like a good idea.
 
 Since v2.1 procedure:
 
@@ -430,10 +444,6 @@ Since v2.1 procedure:
 - Current method: it's a bit hacky how I have the `initrd.img` and `vmlinuz` replacement method (by hooking into the current Live Tails' live system). `/usr/sbin/update-initramfs` in the chroot indicates possible ways to make it more elegant. But it's complicated in how many mounts I have from live system dirs, so for now, keep it 'hacky' because it 'just works'.
 - Current method: Check official Debian Live and Tails docs/build scripts for the ideal squashfs compression parameters, if different.
 - Eventually, change method to build Tails ISO from scratch using official instructions (but including the necessary kernel and driver modifications and insertions for T2) to produce an ISO. Potentially make everything automatic script, for producing the T2Tails ISO.
-
-## TODO (research)
-
-- Is `config` file in aunali1's patches repo superior (for the T2 user experience) in any way? Must balance that with Tails anonymity considerations, with the latter having precedence. Do a diff comparison of Tails config vs. aunali1 file. Tested for Tails 4.22: aunali1 config doesn't work (upon booting the Tails). Perhaps deprecate this TODO next time.
 
 ## Useful reference
 

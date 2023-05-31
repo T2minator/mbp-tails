@@ -168,7 +168,7 @@ scripts/config --module CONFIG_APPLE_BCE
 Do the following command to start compiling your patched Linux kernel, with full CPU usage (best to not use the system while compiling):
 
 ```
-make deb-pkg -j`nproc`
+make bindeb-pkg -j`nproc`
 ```
 
 In the Terminal output, you may now have some remaining config choices to make before it starts compiling - several of them (like 20 or 30). For this iteration of the procedure (tested with kernel 6.1.8), just answer 'n' to everything brought up. For both convenience and security, you should answer 'n' because Tails doesn't have such features enabled in its own similarly-versioned config anyway.
